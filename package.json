@@ -1,0 +1,19 @@
+{
+  "name": "haunty-place",
+  "version": "1.0.0",
+  "description": "A Haunty Place",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhiquanyeo/haunty-place.git"
+  },
+  "author": "ZQ",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhiquanyeo/haunty-place/issues"
+  },
+  "homepage": "https://github.com/zhiquanyeo/haunty-place#readme"
+}
