@@ -1,0 +1,1 @@
+var Board = require('./ouija-board');
