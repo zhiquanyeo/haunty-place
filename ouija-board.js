@@ -1,5 +1,5 @@
 let spec = {
-    steppers: [['M1', 'M2'], ['M3', 'M4']],
+steppers: [{W1: 'M1', W2: 'M2'}, {W1: 'M3', W2: 'M4'}],
     address: 0x60
 };
 
