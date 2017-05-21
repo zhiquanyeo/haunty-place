@@ -8,6 +8,50 @@ function coords(x, y) {
     }
 }
 
+const TEXT_WHITELIST = /[^A-Z0-9,\.]/gi;
+const Y_FUDGE_FACTOR = 3; // mm
+const X_FUDGE_FACTOR = 3; // mm
+
+const CHAR_ROW = {
+    'A': 0,
+    'B': 0,
+    'C': 0,
+    'D': 0,
+    'E': 0,
+    'F': 0,
+    'G': 0,
+    'H': 0,
+    'I': 0,
+    'J': 0,
+    'K': 0,
+    'L': 0,
+    'M': 0,
+    'N': 1,
+    'O': 1,
+    'P': 1,
+    'Q': 1,
+    'R': 1,
+    'S': 1,
+    'T': 1,
+    'U': 1,
+    'V': 1,
+    'W': 1,
+    'X': 1,
+    'Y': 1,
+    'Z': 1,
+
+    '1': 2,
+    '2': 2,
+    '3': 2,
+    '4': 2,
+    '5': 2,
+    '6': 2,
+    '7': 2,
+    '8': 2,
+    '9': 2,
+    '0': 2,
+}
+
 const CHAR_LOCATIONS = {
     'A': coords(128, 151),
     'B': coords(163, 171),
@@ -57,37 +101,43 @@ const SPECIAL_LOCATIONS = {
 const CHAR_DURATION = 0.5;
 const COMMA_DURATION = 1.0;
 const PERIOD_DURATION = 2.0;
+const WORD_DURATION = 1.5;
 
 class OuijaBoard extends EventEmitter {
     constructor(opts) {
         super();
-        this.port = new SerialPort(opts.portPath, opts.portOpts);
-        this.isReady = false;
-        this.queue = [];
-        this._sending = false;
+        try {
+            this.port = new SerialPort(opts.portPath, opts.portOpts);
+            this.isReady = false;
+            this.queue = [];
+            this._sending = false;
 
-        this.port.on('open', () => {
-            this.isReady = true;
-            this.port.flush();
+            this.port.on('open', () => {
+                this.isReady = true;
+                this.port.flush();
 
-            this.port.on('data', (data) => {
-                console.log('data: ', data.toString());
-                // TODO emit serial log event to server
-                this.emit('serialReceive', data);
-                this.dequeue();
+                this.port.on('data', (data) => {
+                    console.log('data: ', data.toString());
+                    // TODO emit serial log event to server
+                    this.emit('serialReceive', data);
+                    this.dequeue();
+                });
+
+                this.port.on('error', (err) => {
+                    console.log(err);
+                    this.emit('serialError', err);
+                });
+
+                this.port.on('close', () => {
+                    console.log('port closed... badness');
+                });
+
+                this.emit('ready');
             });
-
-            this.port.on('error', (err) => {
-                console.log(err);
-                this.emit('serialError', err);
-            });
-
-            this.port.on('close', () => {
-                console.log('port closed... badness');
-            });
-
-            this.emit('ready');
-        });
+        }
+        catch (e) {
+            console.error('OOPS Something went horribly wrong with the board');
+        }
     }
 
     dequeue() {
@@ -124,40 +174,133 @@ class OuijaBoard extends EventEmitter {
         this.eval(cmd + '\n', true);
     }
 
+    // High level move commands
+    moveToCenter() {
+        this.moveToLocation(SPECIAL_LOCATIONS.BOARD_CENTER);
+    }
+
+    moveToYes() {
+        this.moveToLocation(SPECIAL_LOCATIONS.YES);
+    }
+
+    moveToNo() {
+        this.moveToLocation(SPECIAL_LOCATIONS.NO);
+    }
+
+    moveToBye() {
+        this.moveToLocation(SPECIAL_LOCATIONS.BYE);
+    }
+
+    moveToChar(ch) {
+        if (!CHAR_LOCATIONS[ch]) {
+            console.warn('Unknown character');
+            return;
+        }
+        this.moveToLocation(CHAR_LOCATIONS[ch]);
+    }
+
+
+
+    // G-Code generation
+    moveToLocation(coords) {
+        var gcStr = 'G90 G0 X' + coords.x + ' Y' + coords.y;
+        this.progEval(gcStr);
+    }
+
+    pauseFor(secs) {
+        var gcStr = 'G4 P' + secs;
+        this.progEval(gcStr);
+    }
+
     // re-home, and center
     reset() {
         this.progEval('$H');
-        // TODO Fix?
+        // Move to center of board after reset
         this.progEval('G90 G0 X280 Y115');
 
-        // H E L L O
-        this.progEval('G90 G0 X329 Y191');
-        this.progEval('G4 P0.5');
-
-        this.progEval('G90 G0 X247 Y191');
-        this.progEval('G4 P0.5')
-
-        this.progEval('G90 G0 X431 Y173');
-        this.progEval('G4 P0.5');
-
-        this.progEval('G90 G0 X431 Y200');
-        this.progEval('G4 P0.25');
-
-        this.progEval('G90 G0 X431 Y173');
-        this.progEval('G4 P0.5');
-
-        this.progEval('G90 G0 X158 Y108');
-        this.progEval('G4 P2');
-
-        this.progEval('G90 G0 X280 Y115');
+        this.emit('reset');
     }
 
+    // all times in seconds
     showYes(lingerTime) {
-
+        this.emit('moveTo', {
+            type: 'special',
+            location: 'YES'
+        });
+        
+        this.moveToYes();
+        this.pauseFor(lingerTime);
+        this.moveToCenter();
     }
 
     showNo(lingerTime) {
+        this.emit('moveTo', {
+            type: 'special',
+            location: 'NO'
+        });
+        
+        this.moveToNo();
+        this.pauseFor(lingerTime);
+        this.moveToCenter();
+    }
 
+    showBye(lingerTime) {
+        this.emit('moveTo', {
+            type: 'special',
+            location: 'BYE'
+        });
+
+        this.moveToBye();
+        this.pauseFor(lingerTime);
+        this.moveToCenter();
+    }
+
+    spell(sentence) {
+        // convert to upper case first
+        sentence = sentence.toUpperCase().trim();
+        var words = sentence.split(/\s+/);
+
+        for (var i = 0; i < words.length; i++) {
+            this.spellWord(words[i]);
+        }
+
+        // Pause for effect, then move to center
+        this.pauseFor(2.0);
+        this.moveToCenter();
+    }
+
+    spellWord(word) {
+        // TODO Handle same letters in a row?
+        // TODO adjust fudge factor when moving?
+        word = word.replace(TEXT_WHITELIST, '');
+        for (var i = 0; i < word.length; i++) {
+            var ch = word.charAt(i);
+            var chCoords = CHAR_LOCATIONS[ch];
+
+            if (chCoords) {
+                // It's a character
+                this.moveToChar(ch);
+                this.pauseFor(CHAR_DURATION);
+                this.emit('moveTo', {
+                    type: 'character',
+                    character: ch
+                });
+            }
+            else if (ch === ',') {
+                this.pauseFor(COMMA_DURATION);
+                this.emit('pause', {
+                    type: 'comma',
+                    duration: COMMA_DURATION
+                });
+            }
+            else if (ch === '.') {
+                this.pauseFor(PERIOD_DURATION);
+                this.emit('pause', {
+                    type: 'period',
+                    duration: PERIOD_DURATION
+                });
+            }
+        }
     }
 }
 
