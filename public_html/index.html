@@ -1,0 +1,55 @@
+<html>
+<head>
+    <title>Haunty Place Controller</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+<div>
+    <h1>Current State</h1>
+    <p>
+        Current board state is: <span id="boardState"></span>
+    </p>
+    <p>
+        Last board command sent was: <span id="lastCommand"></span>
+    </p>
+</div>
+
+<div>
+    <h1>Manual Control</h1>
+    <button id="btnFullReset">Full Reset</button>
+    <button id="btnResetBoard">Reset Board Only</button>
+    <button id="btnResetGame">Reset Game Only</button>
+
+    <div>
+        <button id="btnCenterPlanchette">Center Planchette</button>
+    </div>
+
+    <div>
+        <button id="btnShowYes">Move to YES</button>
+        <button id="btnShowNo">Move to NO</button>
+        <button id="btnShowBye">Move to GOODBYE</button>
+    </div>
+
+    <div>
+        <input id="txtManualText"/>
+        <button id="btnShowText">Spell Text</button>
+    </div>
+
+</div>
+
+<div>
+    <h1>Game Simulation</h1>
+    <button id="btnCard1">Card 1</button>
+    <button id="btnCard2">Card 2</button>
+    <button id="btnCard3">Card 3</button>
+    <button id="btnCard4">Card 4</button>
+    <button id="btnCard5">Card 5</button>
+    <button id="btnCard6">Card 6</button>
+    <button id="btnCardError">Card Error</button>
+    <br />
+    <button id="btnBell">Bell</button>
+</div>
+
+</body>
+</html>
