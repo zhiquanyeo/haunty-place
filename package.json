@@ -18,6 +18,7 @@
   "homepage": "https://github.com/zhiquanyeo/haunty-place#readme",
   "dependencies": {
     "express": "^4.15.2",
+    "nfc": "^0.3.3",
     "serialport": "^4.0.7",
     "socket.io": "^1.7.3"
   }
