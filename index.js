@@ -86,7 +86,9 @@ io.on('connection', (socket) => {
     socket.on('resetGame', () => {
         console.log('Requested to reset game');
         requiredIdx = 0;
+        cardReader.reset();
         setState('READY');
+        console.log('Required Idx set to 0, card reader reset');
     })
 
     // DEBUG

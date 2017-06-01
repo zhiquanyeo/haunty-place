@@ -16,6 +16,7 @@ class CardReader extends EventEmitter {
             }
 
             this.d_lastUID = tag.uid;
+            console.log('tag read: ', tag.uid);
         });
 
         this.d_device.start();
@@ -27,6 +28,10 @@ class CardReader extends EventEmitter {
 
     get active() {
         return this.d_active;
+    }
+
+    reset() {
+        this.d_lastUID = null;
     }
 }
 
