@@ -9,7 +9,7 @@ const UtilityArduino = require('./util-arduino');
 var PUBLIC_HTML_DIR = __dirname + '/public_html';
 
 var board = new Board({
-    portPath: 'COM3',
+    portPath: '/dev/grbl',
     portOpts: {
         baudRate: 115200
     }
@@ -25,9 +25,10 @@ board.on('ready', () => {
 });
 
 var cardReader = new CardReader();
+cardReader.active = true;
 
 var utilArduino = new UtilityArduino({
-    portPath: '/dev/ttyACM0',
+    portPath: '/dev/arduino',
     portOpts: {
         baudRate: 115200
     }
@@ -39,7 +40,15 @@ app.get('/', (req, res) => {
 });
 
 // Game State Machine
-var requiredCards = [1, 2, 3, 4, 5, 6];
+var requiredCards = [
+    'f4:7c:7e:10',
+    '54:ab:83:10',
+    'f4:1d:8c:10',
+    '24:61:84:10',
+    '64:a9:f4:10',
+    '34:f0:f7:10'
+];
+
 var requiredIdx = 0;
 var state = 'READY';
 

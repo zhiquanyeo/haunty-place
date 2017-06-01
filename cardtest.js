@@ -21,7 +21,7 @@ var utilArduino = new UtilityArduino({
 
 var cardReader = new CardReader();
 cardReader.on('cardScanned', data => {
-    console.log('Read Card ID: ', data.uid);
+    console.log('Read Card ID: ', data.uid, data.device);
 
     if (requiredIdx >= requiredCards.length) {
         console.log('Already done. Ignoring card');
